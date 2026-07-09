@@ -55,6 +55,12 @@ header p{font-size:0.85rem;color:#64748b;margin-top:2px}
 .history-count{text-align:center;font-size:.75rem;color:#94a3b8;margin-top:8px}
 .footer{text-align:center;padding:8px 0 24px;color:#94a3b8;font-size:.8rem;line-height:1.8}
 .footer .version{font-size:.7rem;color:#cbd5e1;margin-top:2px}
+.conn-banner{display:none;background:#ef4444;color:#fff;text-align:center;padding:12px 16px;border-radius:14px;margin-bottom:16px;font-size:.85rem;line-height:1.4;animation:fadeIn .3s ease;box-shadow:0 2px 8px rgba(239,68,68,.3)}
+.conn-banner span{font-size:1.1rem}
+.conn-banner.show{display:block}
+.stale{opacity:.4;pointer-events:none;transition:opacity .4s}
+.stale .status-dot{background:#94a3b8!important;box-shadow:none!important}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
 @media(max-width:400px){.card{padding:16px}.status-indicator{padding:8px 18px}.stat-value{font-size:1.1rem}#chart{height:180px}}
 </style>
 </head>
@@ -64,6 +70,8 @@ header p{font-size:0.85rem;color:#64748b;margin-top:2px}
 <h1>PULSAR 180 GT</h1>
 <p>Sistema de Proximidad</p>
 </header>
+
+<div class="conn-banner" id="connBanner"><span>&#9888;</span> SIN CONEXI&Oacute;N &mdash; Verifica que tu tel&eacute;fono est&eacute; conectado a <strong>Pulsar-180</strong></div>
 
 <div class="card status-card">
 <div class="status-indicator">
@@ -117,9 +125,12 @@ header p{font-size:0.85rem;color:#64748b;margin-top:2px}
 
 <script>
 (function(){
-var E={dot:document.getElementById('statusDot'),label:document.getElementById('distanceLabel'),fill:document.getElementById('signalFill'),rssi:document.getElementById('rssiValue'),distText:document.getElementById('distanceText'),sFill:document.getElementById('sliderFill'),sThumb:document.getElementById('sliderThumb'),clients:document.getElementById('clientCount'),uptime:document.getElementById('uptimeDisplay'),cd:document.getElementById('countdown'),btn:document.getElementById('armBtn'),histCnt:document.getElementById('historyCount')};
+var E={dot:document.getElementById('statusDot'),label:document.getElementById('distanceLabel'),fill:document.getElementById('signalFill'),rssi:document.getElementById('rssiValue'),distText:document.getElementById('distanceText'),sFill:document.getElementById('sliderFill'),sThumb:document.getElementById('sliderThumb'),clients:document.getElementById('clientCount'),uptime:document.getElementById('uptimeDisplay'),cd:document.getElementById('countdown'),btn:document.getElementById('armBtn'),histCnt:document.getElementById('historyCount'),banner:document.getElementById('connBanner')};
 var canvas=document.getElementById('chart'),ctx=canvas&&canvas.getContext('2d');
-var countdown=0,armed=false,history=[],MAX_H=500;
+var countdown=0,armed=false,history=[],MAX_H=500,lastDataTime=0,STALE_T=20000,stale=false;
+
+function setStale(){if(stale)return;stale=true;E.banner.classList.add('show');document.querySelectorAll('.card').forEach(function(c){c.classList.add('stale')});E.btn.style.opacity='.4';E.dot.className='status-dot'}
+function clearStale(){if(!stale)return;stale=false;E.banner.classList.remove('show');document.querySelectorAll('.card').forEach(function(c){c.classList.remove('stale')});E.btn.style.opacity='1'}
 
 function saveH(){try{if(history.length>MAX_H)history=history.slice(-MAX_H);localStorage.setItem('pulsar_history',JSON.stringify(history))}catch(e){}}
 function loadH(){try{var r=localStorage.getItem('pulsar_history');if(r)history=JSON.parse(r)}catch(e){}if(!Array.isArray(history))history=[]}
@@ -187,6 +198,7 @@ E.btn.addEventListener('click',function(){armed=!armed;E.btn.textContent=armed?'
 
 function fetchStatus(){
 fetch('/api/status').then(function(r){return r.json();}).then(function(d){
+clearStale();lastDataTime=Date.now();
 var rssi=d.rssi,cl=d.clients,pct=r2p(rssi),sp=r2s(rssi),dm=d.distance_meters;
 E.clients.textContent=cl;
 E.uptime.textContent=fmtUp(d.uptime);
@@ -209,8 +221,8 @@ E.histCnt.textContent=history.length+' registros guardados';
 }
 countdown=10;E.cd.textContent=10;
 }).catch(function(){
-E.dot.className='status-dot';
-E.label.textContent='Error de conexion';
+setStale();countdown=3;E.cd.textContent=3;
+E.label.textContent='Sin conexion';
 E.rssi.textContent='--';
 E.distText.textContent='--';
 E.fill.style.width='0%';E.sFill.style.width='0%';E.sThumb.style.left='5%';E.clients.textContent='0';
@@ -219,7 +231,7 @@ E.fill.style.width='0%';E.sFill.style.width='0%';E.sThumb.style.left='5%';E.clie
 
 loadH();if(E.histCnt)E.histCnt.textContent=history.length+' registros guardados';
 resizeC();window.addEventListener('resize',resizeC);
-setInterval(function(){if(countdown>0)countdown--;E.cd.textContent=countdown;if(countdown===0)fetchStatus()},1000);
+setInterval(function(){if(lastDataTime!==0&&Date.now()-lastDataTime>STALE_T)setStale();if(countdown>0)countdown--;E.cd.textContent=countdown;if(countdown===0)fetchStatus()},1000);
 fetchStatus();
 })();
 </script>
