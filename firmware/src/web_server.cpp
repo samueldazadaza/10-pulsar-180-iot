@@ -1,4 +1,5 @@
 #include "web_server.h"
+#include "config.h"
 #include "dashboard.h"
 #include "wifi_manager.h"
 #include <ArduinoJson.h>
