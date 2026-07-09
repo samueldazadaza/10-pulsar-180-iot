@@ -29,6 +29,7 @@ void WebServerManager::_handleAPI() {
     doc["distance"]        = WiFiManager::getDistanceLabel();
     doc["distance_meters"] = WiFiManager::getDistanceMeters();
     doc["uptime"]          = WiFiManager::getUptime();
+    doc["ssid"]            = WIFI_SSID;
 
     String response;
     serializeJson(doc, response);

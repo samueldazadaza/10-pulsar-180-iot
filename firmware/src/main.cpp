@@ -10,6 +10,9 @@ void setup() {
     Serial.println("=== PULSAR 180 GT - Sistema de Proximidad ===");
     Serial.println("Iniciando...");
 
+    pinMode(PIN_LED_BUILTIN, OUTPUT);
+    digitalWrite(PIN_LED_BUILTIN, HIGH); // Apagado por defecto
+
     setCpuFrequencyMhz(80);
 
     WiFiManager::initAP();
@@ -24,7 +27,16 @@ void setup() {
 
 void loop() {
     static uint32_t lastUpdate = 0;
+    static uint32_t lastBlink = 0;
     uint32_t now = millis();
+
+    if (now - lastBlink >= LED_INTERVAL_MS) {
+        lastBlink = now;
+        digitalWrite(PIN_LED_BUILTIN, LOW);
+    }
+    if (now - lastBlink >= LED_BLINK_MS) {
+        digitalWrite(PIN_LED_BUILTIN, HIGH);
+    }
 
     if (now - lastUpdate >= UPDATE_INTERVAL_MS) {
         lastUpdate = now;

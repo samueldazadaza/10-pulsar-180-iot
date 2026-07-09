@@ -27,6 +27,12 @@ constexpr float PATH_LOSS_N  = 2.5f;      // Factor de atenuación (2.0 espacio 
 // --- TEMPORIZACIÓN ---
 constexpr uint32_t UPDATE_INTERVAL_MS = 10000; // 10 seg entre lecturas
 
+// --- LED INDICADOR ---
+// GPIO2 (LOW=ON en la mayoría de ESP32 DevKit de AliExpress)
+constexpr uint8_t PIN_LED_BUILTIN   = 2;
+constexpr uint32_t LED_BLINK_MS     = 100;    // 100ms encendido
+constexpr uint32_t LED_INTERVAL_MS  = 5000;   // Cada 5 segundos
+
 // --- PINES ESP32 ---
 // (Reservados para futuros sensores — v2+)
 constexpr uint8_t PIN_FUEL_SENSOR  = 34;  // ADC1_CH6 — sensor gasolina
