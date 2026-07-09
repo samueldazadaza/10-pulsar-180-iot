@@ -24,10 +24,11 @@ void WebServerManager::_handleRoot() {
 void WebServerManager::_handleAPI() {
     StaticJsonDocument<256> doc;
 
-    doc["rssi"]     = WiFiManager::getRSSI();
-    doc["clients"]  = WiFiManager::getClientCount();
-    doc["distance"] = WiFiManager::getDistanceLabel();
-    doc["uptime"]   = WiFiManager::getUptime();
+    doc["rssi"]            = WiFiManager::getRSSI();
+    doc["clients"]         = WiFiManager::getClientCount();
+    doc["distance"]        = WiFiManager::getDistanceLabel();
+    doc["distance_meters"] = WiFiManager::getDistanceMeters();
+    doc["uptime"]          = WiFiManager::getUptime();
 
     String response;
     serializeJson(doc, response);

@@ -30,12 +30,21 @@ void loop() {
         lastUpdate = now;
         WiFiManager::updateRSSI();
 
+        float dist = WiFiManager::getDistanceMeters();
+
         Serial.print("[Lectura] RSSI: ");
         Serial.print(WiFiManager::getRSSI());
         Serial.print(" dBm | Clientes: ");
         Serial.print(WiFiManager::getClientCount());
         Serial.print(" | Distancia: ");
-        Serial.println(WiFiManager::getDistanceLabel());
+        if (dist < 0) {
+            Serial.print("--");
+        } else {
+            Serial.print(dist, 1);
+        }
+        Serial.print(" m (");
+        Serial.print(WiFiManager::getDistanceLabel());
+        Serial.println(")");
     }
 
     WebServerManager::handleClient();

@@ -9,6 +9,7 @@ public:
     static int8_t    getRSSI();
     static uint8_t   getClientCount();
     static const char* getDistanceLabel();
+    static float     getDistanceMeters();
     static uint32_t  getUptime();
 
 private:

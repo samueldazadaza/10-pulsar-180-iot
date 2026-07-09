@@ -25,8 +25,14 @@ Sistema de proximidad para moto **Pulsar 180 GT** basado en **ESP32**. Crea una 
 4. Tu teléfono se conecta a esa red.
 5. El ESP32 mide cada 10 segundos la intensidad de señal (RSSI) de tu teléfono conectado.
 6. Abres `http://192.168.4.1` en el navegador y ves el dashboard con la distancia estimada.
+7. El historial se guarda automáticamente en el almacenamiento local del teléfono (localStorage).
 
 ### Relación señal vs distancia
+
+El ESP32 usa la siguiente fórmula para estimar metros:  
+**distancia = 10 ^ ((RSSI - RSSI_AT_1M) / (-10 × PATH_LOSS_N))**
+
+> Los parámetros `RSSI_AT_1M` (-40 dBm) y `PATH_LOSS_N` (2.5) se pueden ajustar en `config.h` para calibrar según tu entorno.
 
 | RSSI (dBm) | Distancia aprox. | Indicador |
 |---|---|---|
@@ -78,6 +84,14 @@ Abre el navegador en: http://192.168.4.1
 3. Conecta tu teléfono a la red WiFi **Pulsar-180** (contraseña: `pulsar180`)
 4. Abre el navegador y ve a **http://192.168.4.1**
 5. Verás el dashboard en tiempo real
+6. En el monitor serie verás la distancia en metros:
+```
+[Lectura] RSSI: -62 dBm | Clientes: 1 | Distancia: 6.3 m (Cerca)
+```
+6. Ejemplo de salida en monitor serie:
+```
+[Lectura] RSSI: -62 dBm | Clientes: 1 | Distancia: 6.3 m (Cerca)
+```
 
 ---
 
@@ -93,12 +107,24 @@ La página web se ve así:
 │  ┌──────────────────────────┐    │
 │  │    ● CERCA               │    │
 │  │  ████████░░  -55 dBm     │    │
-│  │  Distancia: ~5 m         │    │
+│  │  Distancia: 6.3 m        │    │
 │  └──────────────────────────┘    │
 │                                   │
 │  ─── Proximidad ───              │
 │  ●━━━━━━━━━━━━○━━━               │
 │  Muy cerca    Lejos   Sin señal   │
+│                                   │
+│  ┌──────────────────────────┐    │
+│  │ 📊 Historial de Señal     │    │
+│  │                          │    │
+│  │ 30 ┤╲╲             ┐ 1m │    │
+│  │ 50 ┤  ╲╲╱╲╱╲      │ 6m │    │
+│  │ 70 ┤     ╲╱╲╱╲    │20m │    │
+│  │ 90 ┤        ╲╱╲  ┘50m │    │
+│  │    └─────────────────  │    │
+│  │    21:30  21:31  21:32 │    │
+│  │ ─── RSSI ─── Distancia │    │
+│  └──────────────────────────┘    │
 │                                   │
 │  Clientes: 1     Activo: 02:34    │
 │                                   │
@@ -106,13 +132,17 @@ La página web se ve así:
 │  │     ARMAR ALARMA          │    │
 │  └──────────────────────────┘    │
 │                                   │
-│  Próxima actualización: 7s       │
-│  v1.0 — Pulsar IoT                │
+│  Próxima: 7s · 150 registros     │
+│  v1.1 — Pulsar IoT                │
 └──────────────────────────────────┘
 ```
 
 **Características:**
 - Diseño claro y moderno, responsive para celular
+- Distancia en metros (con decimales si < 10 m)
+- Gráfico histórico con doble eje Y: RSSI (azul) + Distancia (verde)
+- Datos guardados en **localStorage** del teléfono (no se pierden al cerrar)
+- Incluye **fecha y hora** exacta de cada lectura
 - Indicador de distancia con código de colores (verde/amarillo/rojo)
 - Barra de señal visual
 - Control deslizante de proximidad animado
@@ -172,6 +202,7 @@ Tu batería de Pulsar 180 GT tiene típicamente **9Ah**. Con 4% de consumo en 8 
 ## 🗺 Hoja de ruta (futuras versiones)
 
 - [x] **v1** — Dashboard WiFi con indicador de proximidad
+- [x] **v1.1** — Distancia en metros + gráfico histórico + localStorage
 - [ ] **v2** — Sensor de gasolina (ADC) + dashboard con gauge
 - [ ] **v3** — Alarma con sensor de vibración + relé corta corriente
 - [ ] **v4** — Modo sleep profundo con interrupción por movimiento
@@ -189,6 +220,7 @@ GET /api/status
   "rssi": -55,
   "clients": 1,
   "distance": "Cerca",
+  "distance_meters": 6.3,
   "uptime": 1234
 }
 ```
@@ -198,6 +230,7 @@ GET /api/status
 | `rssi` | int | Intensidad de señal en dBm |
 | `clients` | int | Número de teléfonos conectados |
 | `distance` | string | Etiqueta de distancia |
+| `distance_meters` | float | Distancia estimada en metros (-1 si sin conexión) |
 | `uptime` | int | Segundos desde el encendido |
 
 ---

@@ -55,6 +55,11 @@ const char* WiFiManager::getDistanceLabel() {
     return "Sin señal";
 }
 
+float WiFiManager::getDistanceMeters() {
+    if (_clients == 0 || _rssi <= -100) return -1.0f;
+    return pow(10.0f, (_rssi - RSSI_AT_1M) / (-10.0f * PATH_LOSS_N));
+}
+
 uint32_t WiFiManager::getUptime() {
     return (millis() - _startTime) / 1000;
 }

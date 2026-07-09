@@ -6,8 +6,8 @@
 // ============================================================
 
 // --- RED WIFI (Access Point) ---
-constexpr const char* WIFI_SSID       = "Pulsar-180";
-constexpr const char* WIFI_PASSWORD   = "pulsar180";
+constexpr const char* WIFI_SSID       = "180gtpul";
+constexpr const char* WIFI_PASSWORD   = "bogota2066";
 constexpr uint8_t     WIFI_CHANNEL    = 6;
 constexpr uint8_t     WIFI_MAX_CLIENTS = 4;
 
@@ -18,6 +18,11 @@ constexpr int8_t RSSI_CERCA      = -65;   // -50 a -65 → "Cerca"
 constexpr int8_t RSSI_MEDIO      = -75;   // -65 a -75 → "Medio"
 constexpr int8_t RSSI_LEJOS      = -85;   // -75 a -85 → "Lejos"
                                           // < -85  → "Sin señal"
+
+// --- PARÁMETROS DE DISTANCIA ---
+// Fórmula: distancia = 10 ^ ((RSSI - RSSI_AT_1M) / (-10 * PATH_LOSS_N))
+constexpr float RSSI_AT_1M   = -40.0f;   // RSSI medido experimentalmente a 1 metro
+constexpr float PATH_LOSS_N  = 2.5f;      // Factor de atenuación (2.0 espacio libre, 2.5-4.0 exterior)
 
 // --- TEMPORIZACIÓN ---
 constexpr uint32_t UPDATE_INTERVAL_MS = 10000; // 10 seg entre lecturas
